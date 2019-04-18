@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <link rel="stylesheet" href="css/flowPath.css">
+    <style>
+        .header div {
+            color: #666;
+        }
+ 
+        #left > li {
+            width: 198px;
+            height: 78px;
+            line-height: 78px;
+            border: 1px dashed #999;
+            text-align: center;
+            /* font-size: 2rem; */
+            font-size: 1.125rem;
+            color: #333;
+            cursor: pointer;
+            position: absolute;
+            z-index: 2;
+        }
+
+        #left>svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: 1
+        }
+
+        .input .circle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #ccc;
+            top: 34px;
+            left: -7px;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .output .circle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #ccc;
+            top: 34px;
+            right: -7px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: crosshair;
+        }
+
+        .circle:hover {
+            background: #FC9901;
+        }
+        .top .circle{
+            top: -7px;
+            left: 96px;
+        }
+        .bottom .circle{
+            top: auto;
+            bottom: -7px;
+            left: 96px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layui-fluid">
+        <div class="header">
+            <a href="history.back(-1)"><</a> 
+            <div class="msg">流程图名称一</div>
+            <div class="layui-btn" id="save">保存</div>
+        </div>
+
+        <div class="row">
+            <img src="./images/flowPath/connect.png" alt="">
+        </div>
+        <div class="body">
+            <div class="body-content">
+                <ul class="left" id="left">
+                    <svg>
+
+                    </svg>
+                </ul>
+                <div class="right">
+                    <div class="select-device layui-form">
+                        <select name="device-type" lay-verify="" id="device-type" lay-filter="device-type">
+                            <option value="021">全厂</option>
+                            <option value="type">设备类型</option>
+                            <option value="workshop">车间</option>
+                        </select>
+                        <span class="select-split-line"></span>
+                        <select name="device-type-sub" lay-verify="" id="device-type-sub" lay-filter="device-type-sub">
+                        </select>
+                    </div>
+                    <div class="display-device">
+                        <div class="type">
+                            <div class="body-title">车间一</div>
+                            <ul>
+                                <li class="node" draggable="true" data-name="a01">01#吹瓶车间</li>
+                                <li class="node" draggable="true" data-name="a025">025#吹瓶车间</li>
+                                <li class="node" draggable="true" data-name="a03">03#吹瓶车间</li>
+                                <li class="node" draggable="true" data-name="a04">04#吹瓶车间</li>
+                            </ul>
+                        </div>
+                        <div class="type">
+                            <div class="body-title">车间二</div>
+                            <ul>
+                                <li class="node" draggable="true" data-name="a055">055#吹瓶车间</li>
+                                <li class="node" draggable="true" data-name="a06">06#吹瓶车间</li>
+                                <li class="node" draggable="true" data-name="a805">805#吹瓶车间</li>
+                                <li class="node" draggable="true" data-name="a056">056#吹瓶车间</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="http://emcshare.com/Public/static/js/jquery-1.8.3.min.js"></script>
+    <script src="layui/layui.js"></script>
+    <script src="detail4.js"></script>
+    <!-- <script src="detail - demo.js"></script> -->
+    <script>
+        var form;
+        layui.use(['form'], function () {
+            form = layui.form;
+
+            form.on('select(device-type)', function (data) {
+                selData(data.value);
+            });
+        });
+
+        $(document).on('click', '.box-warpper', function () {
+            $('.box-warpper').removeClass('act');
+            $(this).addClass('act');
+        })
+
+        $(document).on('click', '.box-warpper .layui-icon', function () {
+            console.log(333)
+            var $this = $(this);
+            var site = $this.data('site');
+            var x = $(this).offset().top;
+            var y = $(this).offset().left;
+
+            console.log(x)
+            console.log(y)
+            
+            var html = '<div class="box-warpper" style="left: ' + (x + 200) + 'px;top: 200px;"><i class="layui-icon layui-icon-add-circle icon-top" data-site="top"></i><i class="layui-icon layui-icon-add-circle icon-right" data-site="right"></i><i class="layui-icon layui-icon-add-circle icon-bottom" data-site="bottom"></i><i class="layui-icon layui-icon-add-circle icon-left" data-site="left"></i> <div class="box">+</div></div>';
+            $('.left').append(html);
+        })
+
+
+        function selData(type) {
+            if (!type) type = 'workshop';
+            url = 'http://emcshare.com/index.php/Admin/KanbanApi/multiple/type/machine-' + type +
+                '?company_id=1001';
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function (res) {
+                    var html = '';
+                    if (res.error == 0) {
+                        $.each(res.data, function (i, v) {
+                            html += '<option value="' + v.name + '">' + v.name + '</option>'
+                        })
+                        $('#device-type-sub').html(html);
+                        form.render();
+                    };
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
